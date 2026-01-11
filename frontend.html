@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Market Movement Prediction</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2em; }
+        input, textarea, button { margin: 0.5em 0; width: 100%; }
+        #result { margin-top: 1em; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>Transformer Market Movement Prediction</h1>
+    <label for="inputData">Input Sequence (JSON array of arrays):</label>
+    <textarea id="inputData" rows="6" placeholder="[[...], [...], ...]"></textarea>
+    <button onclick="predict()">Predict</button>
+    <button onclick="fillExample()">Fill Example Input</button>
+    <div id="result"></div>
+    <script>
+        async function predict() {
+            const data = document.getElementById('inputData').value;
+            let parsed;
+            try {
+                parsed = JSON.parse(data);
+            } catch (e) {
+                document.getElementById('result').innerText = 'Invalid JSON input.';
+                return;
+            }
+            const res = await fetch('http://127.0.0.1:8000/predict', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ data: parsed })
+            });
+            if (res.ok) {
+                const out = await res.json();
+                document.getElementById('result').innerText = 'Prediction: ' + out.prediction;
+            } else {
+                document.getElementById('result').innerText = 'API error.';
+            }
+        }
+
+        function fillExample() {
+            // Fill with a valid example: 30 rows, 5 features each
+            let arr = [];
+            for (let i = 0; i < 30; i++) {
+                arr.push([0.1*i, 0.2*i, 0.3*i, 0.4*i, 0.5*i]);
+            }
+            document.getElementById('inputData').value = JSON.stringify(arr, null, 2);
+            document.getElementById('result').innerText = '';
+        }
+    </script>
+</body>
+</html>
